@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FI Projection Studio — Endowus + IBKR + Emergency</title>
+<style>
+  :root {
+    --bg: #0b1020; --bg2:#0e1427; --glass:#0c1224cc; --muted:#9aa4b2; --text:#eaf0ff;
+    --stroke:#1d2540; --accent:#7c3aed; --a2:#22c55e; --a3:#38bdf8; --a4:#f59e0b;
+  }
+  *{box-sizing:border-box;font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+  body{margin:0;background:radial-gradient(1200px 800px at 20% -10%, #142048, transparent),
+                   radial-gradient(1000px 600px at 120% 10%, #0a2540, transparent),
+                   linear-gradient(180deg, var(--bg), var(--bg2)); color:var(--text);}
+  .frame{max-width:1200px;margin:0 auto;padding:24px;}
+  header{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#3b82f6, #22c55e);
+        display:grid;place-items:center;font-weight:900;color:white;box-shadow:0 8px 30px #0006}
+  h1{font-size:clamp(20px,3vw,28px);margin:0}
+  .sub{color:var(--muted);margin:0}
+  .grid{display:grid;gap:16px;grid-template-columns:1fr;align-items:start}
+  @media (min-width: 1000px){.grid{grid-template-columns:430px 1fr}}
+  .card{background:linear-gradient(180deg,#0b1329,#0a1124);
+        border:1px solid var(--stroke);border-radius:16px;padding:16px;box-shadow:inset 0 1px 0 #ffffff10, 0 20px 60px #0004}
+  .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .section-title h2{font-size:16px;color:#cbd5e1;margin:0}
+  .btn, .pill{cursor:pointer;background:#0f1733;border:1px solid var(--stroke);color:var(--text);
+       padding:10px 12px;border-radius:10px}
+  .pill{padding:8px 10px;border-radius:999px;color:var(--muted)}
+  .pill:hover, .btn:hover{border-color:#334155}
+  .pillbar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+  .inputs{display:grid;gap:10px}
+  .row{display:grid;gap:8px}
+  .row label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+  .control{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center}
+  input[type=number], input[type=range]{
+      width:100%;background:#0a1228;border:1px solid var(--stroke);border-radius:10px;color:var(--text);
+      padding:10px 12px}
+  input[type=range]{appearance:none;height:36px;padding:0 8px;background:transparent;border:none}
+  input[type=range]::-webkit-slider-runnable-track{
+      height:6px;background:linear-gradient(90deg,#0b1a3a,#1e3a8a);border-radius:999px}
+  input[type=range]::-webkit-slider-thumb{
+      appearance:none;margin-top:-6px;width:18px;height:18px;border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #fff, #c7d2fe);
+      border:2px solid #3b82f6;box-shadow:0 0 0 6px #3b82f640}
+  .results{display:grid;gap:14px;grid-template-columns:1fr}
+  @media (min-width: 720px){.results{grid-template-columns:1fr 1fr 1fr}}
+  .res{position:relative;overflow:hidden;border-radius:16px;border:1px solid var(--stroke);padding:16px;
+       background:linear-gradient(180deg,#0c152d,#0a1226)}
+  .res::after{content:"";position:absolute;inset:-20px -60px auto auto;width:220px;height:220px;border-radius:50%;
+              background:radial-gradient(closest-side, #ffffff12, transparent);transform:rotate(8deg)}
+  .res h3{margin:0 0 6px;font-size:15px;color:#e2e8f0}
+  .big{font-size:28px;font-weight:800;margin:4px 0 10px}
+  .split{display:flex;gap:10px;flex-wrap:wrap}
+  .split .chip{flex:1 1 140px;background:#0a1228;border:1px solid var(--stroke);border-radius:12px;padding:10px}
+  .chip .k{font-size:12px;color:#9aa4b2}
+  .muted{font-size:12px;color:var(--muted);margin:8px 0 0}
+  .accentW{outline:1px solid #334155;box-shadow:0 0 0 2px #33415540}
+  .accentL{outline:1px solid #2563eb;box-shadow:0 0 0 2px #2563eb40}
+  .accentB{outline:1px solid #a16207;box-shadow:0 0 0 2px #a1620740}
+  .foot{font-size:12px;color:var(--muted);margin-top:8px}
+  .row .inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .badge{background:#0b1733;border:1px solid var(--stroke);border-radius:8px;padding:6px 8px;color:#a3b2ff;font-size:12px}
+  .badge.green{color:#86efac}
+</style>
+</head>
+<body>
+  <div class="frame">
+    <header>
+      <div class="logo">FI</div>
+      <div>
+        <h1>FI Projection Studio</h1>
+        <p class="sub">Interactive calculator for Endowus + IBKR + Emergency Fund (monthly compounding). Drag sliders or type exact values — results update instantly.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="section-title">
+          <h2>Plan Inputs</h2>
+          <div class="pillbar">
+            <span class="pill" id="presetSAS">Use our current plan</span>
+            <span class="pill" id="presetMax">Max out scenario</span>
+            <span class="pill" id="resetBtn">Reset to defaults</span>
+          </div>
+        </div>
+
+        <div class="inputs">
+          <div class="row">
+            <label>Years from now <span class="badge" id="yearsBadge"></span></label>
+            <div class="control">
+              <input type="range" id="yearsRange" min="1" max="40" value="14" step="1">
+              <input type="number" id="years" value="14" min="1" max="40">
+            </div>
+          </div>
+
+          <div class="row">
+            <label>Endowus annual per person (SGD) <span class="badge" id="endoBadge"></span></label>
+            <div class="control">
+              <input type="range" id="endowusAnnualRange" min="0" max="30000" value="9500" step="100">
+              <input type="number" id="endowusAnnual" value="9500" min="0" max="30000" step="100">
+            </div>
+          </div>
+
+          <div class="row">
+            <label># of Endowus accounts (people)</label>
+            <div class="control">
+              <input type="range" id="endowusPeopleRange" min="0" max="4" value="2" step="1">
+              <input type="number" id="endowusPeople" value="2" min="0" max="4" step="1">
+            </div>
+          </div>
+
+          <div class="row">
+            <label>IBKR monthly contribution (SGD) <span class="badge" id="ibkrBadge"></span></label>
+            <div class="control">
+              <input type="range" id="ibkrMonthlyRange" min="0" max="10000" value="4500" step="100">
+              <input type="number" id="ibkrMonthly" value="4500" min="0" max="10000" step="50">
+            </div>
+          </div>
+
+          <div class="row">
+            <label>Emergency fund starting balance (SGD)</label>
+            <div class="control">
+              <input type="range" id="efStartRange" min="0" max="200000" value="10000" step="500">
+              <input type="number" id="efStart" value="10000" min="0" max="200000" step="100">
+            </div>
+          </div>
+
+          <div class="row">
+            <label>Emergency fund monthly contribution (SGD)</label>
+            <div class="control">
+              <input type="range" id="efMonthlyRange" min="0" max="5000" value="0" step="50">
+              <input type="number" id="efMonthly" value="0" min="0" max="5000" step="50">
+            </div>
+          </div>
+
+          <div class="row">
+            <label>Market return assumptions (p.a.)</label>
+            <div class="inline">
+              <span class="badge">Investments</span>
+              <div class="control">
+                <input type="range" id="rWorst" min="0" max="20" value="5" step="0.25">
+                <input type="number" id="rWorstNum" value="5" min="0" max="20" step="0.25">
+              </div>
+              <div class="control">
+                <input type="range" id="rLikely" min="0" max="20" value="8" step="0.25">
+                <input type="number" id="rLikelyNum" value="8" min="0" max="20" step="0.25">
+              </div>
+              <div class="control">
+                <input type="range" id="rBest" min="0" max="30" value="11" step="0.25">
+                <input type="number" id="rBestNum" value="11" min="0" max="30" step="0.25">
+              </div>
+            </div>
+            <div class="inline">
+              <span class="badge">Emergency</span>
+              <div class="control">
+                <input type="range" id="rWorstCash" min="0" max="10" value="2" step="0.25">
+                <input type="number" id="rWorstCashNum" value="2" min="0" max="10" step="0.25">
+              </div>
+              <div class="control">
+                <input type="range" id="rLikelyCash" min="0" max="10" value="3" step="0.25">
+                <input type="number" id="rLikelyCashNum" value="3" min="0" max="10" step="0.25">
+              </div>
+              <div class="control">
+                <input type="range" id="rBestCash" min="0" max="15" value="4" step="0.25">
+                <input type="number" id="rBestCashNum" value="4" min="0" max="15" step="0.25">
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="foot">All results show future value after monthly compounding. Use “Max out” to explore an aggressive savings push.</p>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <h2>Results (updates live)</h2>
+          <span class="badge green" id="contribBadge"></span>
+        </div>
+        <div class="results">
+          <div class="res accentW">
+            <h3>Worst-case</h3>
+            <div class="big" id="worstTotal">–</div>
+            <div class="split">
+              <div class="chip"><div class="k">Endowus</div><div id="worstEndowus">–</div></div>
+              <div class="chip"><div class="k">IBKR</div><div id="worstIBKR">–</div></div>
+              <div class="chip"><div class="k">Emergency</div><div id="worstEF">–</div></div>
+            </div>
+            <p class="muted" id="worstContrib"></p>
+          </div>
+          <div class="res accentL">
+            <h3>Likely</h3>
+            <div class="big" id="likelyTotal">–</div>
+            <div class="split">
+              <div class="chip"><div class="k">Endowus</div><div id="likelyEndowus">–</div></div>
+              <div class="chip"><div class="k">IBKR</div><div id="likelyIBKR">–</div></div>
+              <div class="chip"><div class="k">Emergency</div><div id="likelyEF">–</div></div>
+            </div>
+            <p class="muted" id="likelyContrib"></p>
+          </div>
+          <div class="res accentB">
+            <h3>Best-case</h3>
+            <div class="big" id="bestTotal">–</div>
+            <div class="split">
+              <div class="chip"><div class="k">Endowus</div><div id="bestEndowus">–</div></div>
+              <div class="chip"><div class="k">IBKR</div><div id="bestIBKR">–</div></div>
+              <div class="chip"><div class="k">Emergency</div><div id="bestEF">–</div></div>
+            </div>
+            <p class="muted" id="bestContrib"></p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+function fvMonthly(contribMonthly, years, annualRate, initial=0){
+  const months = Math.max(0, Math.floor(years*12));
+  const r = (annualRate||0)/12;
+  let fv = initial||0;
+  for(let m=0;m<months;m++){
+    fv = fv * (1 + r) + (contribMonthly||0);
+  }
+  return fv;
+}
+const fmt = n => 'S$ ' + (n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+const set = (id, v) => document.getElementById(id).textContent = v;
+
+function gather(){
+  const years = +document.getElementById('years').value;
+  const endoAnnual = +document.getElementById('endowusAnnual').value;
+  const people = +document.getElementById('endowusPeople').value;
+  const ibkrMonthly = +document.getElementById('ibkrMonthly').value;
+  const efStart = +document.getElementById('efStart').value;
+  const efMonthly = +document.getElementById('efMonthly').value;
+  const rWorst = +document.getElementById('rWorst').value/100;
+  const rLikely = +document.getElementById('rLikely').value/100;
+  const rBest = +document.getElementById('rBest').value/100;
+  const rWorstCash = +document.getElementById('rWorstCash').value/100;
+  const rLikelyCash = +document.getElementById('rLikelyCash').value/100;
+  const rBestCash = +document.getElementById('rBestCash').value/100;
+  return {years, endoAnnual, people, ibkrMonthly, efStart, efMonthly, rWorst, rLikely, rBest, rWorstCash, rLikelyCash, rBestCash};
+}
+
+function syncBadges(){
+  document.getElementById('yearsBadge').textContent = document.getElementById('years').value + ' yrs';
+  document.getElementById('endoBadge').textContent = 'S$ ' + (+document.getElementById('endowusAnnual').value).toLocaleString();
+  document.getElementById('ibkrBadge').textContent = 'S$ ' + (+document.getElementById('ibkrMonthly').value).toLocaleString() + '/mo';
+}
+
+function calc(){
+  const S = gather();
+  const endoMonthlyAll = (S.endoAnnual * S.people)/12;
+  const contribTotals = S.endoAnnual*S.people*S.years + S.ibkrMonthly*12*S.years + S.efStart + S.efMonthly*12*S.years;
+  document.getElementById('contribBadge').textContent = 'Total contributions: S$ ' + contribTotals.toLocaleString();
+
+  const scenarios = [
+    {k:'worst', rInv:S.rWorst, rCash:S.rWorstCash},
+    {k:'likely', rInv:S.rLikely, rCash:S.rLikelyCash},
+    {k:'best', rInv:S.rBest, rCash:S.rBestCash},
+  ];
+
+  scenarios.forEach(sc=>{
+    const vEndo = fvMonthly(endoMonthlyAll, S.years, sc.rInv, 0);
+    const vIBKR = fvMonthly(S.ibkrMonthly, S.years, sc.rInv, 0);
+    const vEF = fvMonthly(S.efMonthly, S.years, sc.rCash, S.efStart);
+    const total = vEndo + vIBKR + vEF;
+    set(sc.k+'Endowus', fmt(vEndo));
+    set(sc.k+'IBKR', fmt(vIBKR));
+    set(sc.k+'EF', fmt(vEF));
+    set(sc.k+'Total', fmt(total));
+    set(sc.k+'Contrib', '');
+  });
+  syncBadges();
+}
+
+function bindPair(rangeId, numberId){
+  const r = document.getElementById(rangeId);
+  const n = document.getElementById(numberId);
+  const sync = (src, dst) => () => { dst.value = src.value; calc(); };
+  r.addEventListener('input', sync(r,n));
+  n.addEventListener('input', sync(n,r));
+}
+
+function initPairs(){
+  bindPair('yearsRange','years');
+  bindPair('endowusAnnualRange','endowusAnnual');
+  bindPair('endowusPeopleRange','endowusPeople');
+  bindPair('ibkrMonthlyRange','ibkrMonthly');
+  bindPair('efStartRange','efStart');
+  bindPair('efMonthlyRange','efMonthly');
+  bindPair('rWorst','rWorstNum');
+  bindPair('rLikely','rLikelyNum');
+  bindPair('rBest','rBestNum');
+  bindPair('rWorstCash','rWorstCashNum');
+  bindPair('rLikelyCash','rLikelyCashNum');
+  bindPair('rBestCash','rBestCashNum');
+}
+
+document.getElementById('presetSAS').addEventListener('click', ()=>{
+  document.getElementById('years').value = document.getElementById('yearsRange').value = 14;
+  document.getElementById('endowusAnnual').value = document.getElementById('endowusAnnualRange').value = 9500;
+  document.getElementById('endowusPeople').value = document.getElementById('endowusPeopleRange').value = 2;
+  document.getElementById('ibkrMonthly').value = document.getElementById('ibkrMonthlyRange').value = 4500;
+  document.getElementById('efStart').value = document.getElementById('efStartRange').value = 10000;
+  document.getElementById('efMonthly').value = document.getElementById('efMonthlyRange').value = 0;
+  document.getElementById('rWorst').value = document.getElementById('rWorstNum').value = 5;
+  document.getElementById('rLikely').value = document.getElementById('rLikelyNum').value = 8;
+  document.getElementById('rBest').value = document.getElementById('rBestNum').value = 11;
+  document.getElementById('rWorstCash').value = document.getElementById('rWorstCashNum').value = 2;
+  document.getElementById('rLikelyCash').value = document.getElementById('rLikelyCashNum').value = 3;
+  document.getElementById('rBestCash').value = document.getElementById('rBestCashNum').value = 4;
+  calc();
+});
+
+document.getElementById('presetMax').addEventListener('click', ()=>{
+  document.getElementById('years').value = document.getElementById('yearsRange').value = 20;
+  document.getElementById('endowusAnnual').value = document.getElementById('endowusAnnualRange').value = 20000;
+  document.getElementById('endowusPeople').value = document.getElementById('endowusPeopleRange').value = 2;
+  document.getElementById('ibkrMonthly').value = document.getElementById('ibkrMonthlyRange').value = 6500;
+  document.getElementById('efStart').value = document.getElementById('efStartRange').value = 20000;
+  document.getElementById('efMonthly').value = document.getElementById('efMonthlyRange').value = 500;
+  document.getElementById('rWorst').value = document.getElementById('rWorstNum').value = 4;
+  document.getElementById('rLikely').value = document.getElementById('rLikelyNum').value = 7.5;
+  document.getElementById('rBest').value = document.getElementById('rBestNum').value = 10.5;
+  document.getElementById('rWorstCash').value = document.getElementById('rWorstCashNum').value = 1.5;
+  document.getElementById('rLikelyCash').value = document.getElementById('rLikelyCashNum').value = 3;
+  document.getElementById('rBestCash').value = document.getElementById('rBestCashNum').value = 4.5;
+  calc();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  window.location.reload();
+});
+
+initPairs();
+calc();
+syncBadges();
+</script>
+</body>
+</html>
